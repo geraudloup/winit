@@ -200,7 +200,7 @@ impl<T: 'static> EventLoop<T> {
 
             let mut dummy = self.control_flow;
             sticky_exit_callback(
-                Event::LoopDestroyed,
+                Event::LoopExiting,
                 self.window_target(),
                 &mut dummy,
                 &mut callback,
