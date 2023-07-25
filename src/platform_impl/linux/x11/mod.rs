@@ -661,15 +661,7 @@ impl<T: 'static> EventLoop<T> {
                 );
             }
         }
-        // send MainEventsCleared
-        {
-            sticky_exit_callback(
-                crate::event::Event::MainEventsCleared,
-                &self.target,
-                &mut control_flow,
-                callback,
-            );
-        }
+
         // Empty the redraw requests
         {
             let mut windows = HashSet::new();
@@ -688,10 +680,11 @@ impl<T: 'static> EventLoop<T> {
                 );
             }
         }
-        // send RedrawEventsCleared
+
+        // send AboutToWait
         {
             sticky_exit_callback(
-                crate::event::Event::RedrawEventsCleared,
+                crate::event::Event::AboutToWait,
                 &self.target,
                 &mut control_flow,
                 callback,

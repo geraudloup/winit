@@ -484,13 +484,6 @@ impl<T: 'static> EventLoop<T> {
             }
         }
 
-        sticky_exit_callback(
-            event::Event::MainEventsCleared,
-            self.window_target(),
-            &mut control_flow,
-            callback,
-        );
-
         if self.running {
             if resized {
                 let size = if let Some(native_window) = self.android_app.native_window().as_ref() {
@@ -516,7 +509,7 @@ impl<T: 'static> EventLoop<T> {
         }
 
         sticky_exit_callback(
-            event::Event::RedrawEventsCleared,
+            event::Event::AboutToWait,
             self.window_target(),
             &mut control_flow,
             callback,

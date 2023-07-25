@@ -16,13 +16,12 @@
 //!     for e in (window events, user events, device events) {
 //!         event_handler(e, ..., &mut control_flow);
 //!     }
-//!     event_handler(MainEventsCleared, ..., &mut control_flow);
 //!
 //!     for w in (redraw windows) {
 //!         event_handler(RedrawRequested(w), ..., &mut control_flow);
 //!     }
-//!     event_handler(RedrawEventsCleared, ..., &mut control_flow);
 //!
+//!     event_handler(AboutToWait, ..., &mut control_flow);
 //!     start_cause = wait_if_necessary(control_flow);
 //! }
 //!
@@ -217,9 +216,9 @@ pub enum Event<'a, T: 'static> {
     /// [`Event::RedrawRequested`](crate::event::Event::RedrawRequested), which gets emitted
     /// immediately after this event. Programs that draw graphics continuously, like most games,
     /// can render here unconditionally for simplicity.
-    MainEventsCleared,
+    AboutToWait,
 
-    /// Emitted after [`MainEventsCleared`] when a window should be redrawn.
+    /// Emitted after [`AboutToWait`] when a window should be redrawn.
     ///
     /// This gets triggered in two scenarios:
     /// - The OS has performed an operation that's invalidated the window's contents (such as
@@ -235,24 +234,12 @@ pub enum Event<'a, T: 'static> {
     ///
     /// ## Platform-specific
     ///
-    /// - **macOS / iOS:** Due to implementation difficulties, this will often, but not always, be
-    ///   emitted directly inside `drawRect:`, with neither a preceding [`MainEventsCleared`] nor
-    ///   subsequent `RedrawEventsCleared`. See [#2640] for work on this.
+    /// - **macOS / iOS:** This will often, but not always, be emitted directly inside `drawRect:`.
+    ///   See [#2640] for work on this.
     ///
-    /// [`MainEventsCleared`]: Self::MainEventsCleared
-    /// [`RedrawEventsCleared`]: Self::RedrawEventsCleared
+    /// [`AboutToWait`]: Self::AboutToWait
     /// [#2640]: https://github.com/rust-windowing/winit/issues/2640
     RedrawRequested(WindowId),
-
-    /// Emitted after all [`RedrawRequested`] events have been processed and control flow is about to
-    /// be taken away from the program. If there are no `RedrawRequested` events, it is emitted
-    /// immediately after `MainEventsCleared`.
-    ///
-    /// This event is useful for doing any cleanup or bookkeeping work after all the rendering
-    /// tasks have been completed.
-    ///
-    /// [`RedrawRequested`]: Self::RedrawRequested
-    RedrawEventsCleared,
 
     /// Emitted when the event loop is being shut down.
     ///
@@ -275,9 +262,8 @@ impl<T: Clone> Clone for Event<'static, T> {
                 event: event.clone(),
             },
             NewEvents(cause) => NewEvents(*cause),
-            MainEventsCleared => MainEventsCleared,
+            AboutToWait => AboutToWait,
             RedrawRequested(wid) => RedrawRequested(*wid),
-            RedrawEventsCleared => RedrawEventsCleared,
             LoopExiting => LoopExiting,
             Suspended => Suspended,
             Resumed => Resumed,
@@ -294,9 +280,8 @@ impl<'a, T> Event<'a, T> {
             WindowEvent { window_id, event } => Ok(WindowEvent { window_id, event }),
             DeviceEvent { device_id, event } => Ok(DeviceEvent { device_id, event }),
             NewEvents(cause) => Ok(NewEvents(cause)),
-            MainEventsCleared => Ok(MainEventsCleared),
+            AboutToWait => Ok(AboutToWait),
             RedrawRequested(wid) => Ok(RedrawRequested(wid)),
-            RedrawEventsCleared => Ok(RedrawEventsCleared),
             LoopExiting => Ok(LoopExiting),
             Suspended => Ok(Suspended),
             Resumed => Ok(Resumed),
@@ -314,9 +299,8 @@ impl<'a, T> Event<'a, T> {
             UserEvent(event) => Some(UserEvent(event)),
             DeviceEvent { device_id, event } => Some(DeviceEvent { device_id, event }),
             NewEvents(cause) => Some(NewEvents(cause)),
-            MainEventsCleared => Some(MainEventsCleared),
+            AboutToWait => Some(AboutToWait),
             RedrawRequested(wid) => Some(RedrawRequested(wid)),
-            RedrawEventsCleared => Some(RedrawEventsCleared),
             LoopExiting => Some(LoopExiting),
             Suspended => Some(Suspended),
             Resumed => Some(Resumed),
